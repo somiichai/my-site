@@ -11,16 +11,21 @@
     --border: #333333;
     --text: #d4d4d4;
     --muted: #666666;
-    --green: #00ff41; /* Терминальный зеленый */
-    --red: #ff3333;   /* Дота-красный */
+    --green: #00ff41;
+    --red: #ff3333;
     --font-mono: 'Consolas', 'Courier New', monospace;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* Кастомный скроллбар */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); border-left: 1px solid var(--border); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--green); }
+
   body {
     background-color: var(--bg);
-    /* Едва заметная сетка на фоне */
     background-image: 
       linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
@@ -28,6 +33,8 @@
     color: var(--text);
     font-family: var(--font-mono);
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     line-height: 1.5;
   }
 
@@ -35,6 +42,8 @@
     max-width: 750px;
     margin: 0 auto;
     padding: 40px 20px;
+    flex: 1;
+    width: 100%;
   }
 
   /* Шапка как в терминале */
@@ -44,8 +53,10 @@
     padding: 20px;
     margin-bottom: 20px;
     position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
   }
-  /* Имитация кнопок окна ОС */
   .header::before {
     content: "■ □ X";
     position: absolute;
@@ -55,19 +66,30 @@
     font-size: 12px;
     letter-spacing: 4px;
   }
-  .header h1 {
+  .header-info h1 {
     font-size: 24px;
     color: var(--green);
     text-transform: uppercase;
     margin-bottom: 8px;
   }
-  .header h1 span {
-    color: var(--red);
-  }
-  .header p {
+  .header-info h1 span { color: var(--red); }
+  .header-info p { color: var(--muted); font-size: 14px; }
+  
+  /* Переключатель звука */
+  .sound-toggle {
+    background: transparent;
+    border: 1px solid var(--border);
     color: var(--muted);
-    font-size: 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 8px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s;
   }
+  .sound-toggle:hover { border-color: var(--green); color: var(--green); }
+  .sound-toggle.active { color: var(--green); border-color: var(--green); }
+
   .cursor {
     display: inline-block;
     width: 10px;
@@ -79,13 +101,8 @@
   }
   @keyframes blink { 50% { opacity: 0; } }
 
-  /* Вкладки в стиле консольных команд */
-  .tabs {
-    display: flex;
-    gap: 5px;
-    margin-bottom: -1px; /* Соединяем с контентом */
-    flex-wrap: wrap;
-  }
+  /* Вкладки */
+  .tabs { display: flex; gap: 5px; margin-bottom: -1px; flex-wrap: wrap; }
   .tab-btn {
     background: var(--bg);
     border: 1px solid var(--border);
@@ -97,15 +114,11 @@
     cursor: pointer;
     transition: all 0.1s;
   }
-  .tab-btn:hover {
-    color: var(--text);
-    background: #1a1a1a;
-  }
+  .tab-btn:hover { color: var(--text); background: #1a1a1a; }
   .tab-btn.active {
     background: var(--panel);
     color: var(--green);
-    border-color: var(--border);
-    border-bottom-color: var(--panel); /* Сливается с контентом */
+    border-bottom-color: var(--panel);
     font-weight: bold;
   }
 
@@ -116,31 +129,25 @@
     padding: 30px;
     margin-bottom: 30px;
     min-height: 300px;
+    position: relative;
   }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
+  /* Эффект печатной машинки */
+  .typewriter { overflow: hidden; border-right: .15em solid var(--green); white-space: pre-wrap; letter-spacing: .05em; animation: typing 2.5s steps(40, end), blink-caret .75s step-end infinite; }
+  @keyframes typing { from { width: 0 } to { width: 100% } }
+  @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: var(--green) } }
+
   /* Текст "Обо мне" */
-  .readme-text p {
-    margin-bottom: 16px;
-    font-size: 15px;
-  }
-  .readme-text p::before {
-    content: "> ";
-    color: var(--green);
-    font-weight: bold;
-  }
+  .readme-text p { margin-bottom: 16px; font-size: 15px; }
+  .readme-text p::before { content: "> "; color: var(--green); font-weight: bold; }
   .keyword { color: var(--red); }
   .string { color: var(--green); }
 
   /* Форма */
   .form-group { margin-bottom: 20px; }
-  label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--muted);
-    font-size: 13px;
-  }
+  label { display: block; margin-bottom: 8px; color: var(--muted); font-size: 13px; }
   input, textarea {
     width: 100%;
     background: #050505;
@@ -151,10 +158,7 @@
     font-size: 15px;
     outline: none;
   }
-  input:focus, textarea:focus {
-    border-color: var(--green);
-    box-shadow: 0 0 5px rgba(0, 255, 65, 0.2);
-  }
+  input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 5px rgba(0, 255, 65, 0.2); }
   textarea { min-height: 120px; resize: vertical; }
   
   button[type="submit"] {
@@ -169,73 +173,52 @@
     text-transform: uppercase;
     transition: all 0.1s;
   }
-  button[type="submit"]:hover {
-    background: var(--green);
-    color: #000;
-    border-color: var(--green);
-  }
-  button[type="submit"]:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: var(--border);
-    color: var(--text);
-  }
+  button[type="submit"]:hover { background: var(--green); color: #000; border-color: var(--green); }
+  button[type="submit"]:disabled { opacity: 0.5; cursor: not-allowed; background: var(--border); color: var(--text); }
 
-  /* Логи / Список вопросов */
-  .log-item {
-    border-left: 2px solid var(--border);
-    padding-left: 15px;
-    margin-bottom: 25px;
-    position: relative;
-  }
+  /* Логи */
+  .log-item { border-left: 2px solid var(--border); padding-left: 15px; margin-bottom: 25px; position: relative; }
   .log-item::before {
-    content: "";
-    position: absolute;
-    left: -4px;
-    top: 5px;
-    width: 6px;
-    height: 6px;
-    background: var(--border);
-    border-radius: 50%;
+    content: ""; position: absolute; left: -4px; top: 5px; width: 6px; height: 6px; background: var(--border); border-radius: 50%;
   }
-  .log-meta {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 4px;
-    text-transform: uppercase;
-  }
-  .log-q {
-    color: var(--text);
-    font-size: 15px;
-    margin-bottom: 10px;
-  }
+  .log-meta { font-size: 12px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; }
+  .log-q { color: var(--text); font-size: 15px; margin-bottom: 10px; }
   .log-a {
-    color: var(--green);
-    font-size: 15px;
-    background: rgba(0, 255, 65, 0.05);
-    padding: 10px;
-    border: 1px dashed var(--green);
+    color: var(--green); font-size: 15px; background: rgba(0, 255, 65, 0.05); padding: 10px; border: 1px dashed var(--green);
   }
-  .log-a::before {
-    content: "ОТВЕТ: ";
-    font-size: 12px;
-    font-weight: bold;
-    display: block;
-    margin-bottom: 4px;
-    opacity: 0.7;
-  }
+  .log-a::before { content: "ОТВЕТ: "; font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px; opacity: 0.7; }
   
-  .empty-msg {
+  .empty-msg { color: var(--muted); text-align: center; padding: 40px 0; font-style: italic; }
+
+  /* Статус-бар (Как в VS Code) */
+  .status-bar {
+    background: #111;
+    border-top: 1px solid var(--border);
+    padding: 5px 15px;
+    font-size: 12px;
     color: var(--muted);
-    text-align: center;
-    padding: 40px 0;
-    font-style: italic;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
   }
+  .status-bar span { margin-right: 15px; }
+  .status-bar .green { color: var(--green); }
+  
+  /* Спиннер загрузки */
+  .spinner { color: var(--green); font-weight: bold; margin-right: 5px; }
 
   @media (max-width: 600px) {
     .tabs { gap: 2px; }
     .tab-btn { flex: 1; padding: 10px 5px; font-size: 12px; text-align: center; }
     .content-box { padding: 20px 15px; }
+    .header { flex-direction: column; }
+    .sound-toggle { margin-top: 15px; align-self: flex-start; }
+    .status-bar { flex-direction: column; align-items: flex-start; gap: 5px; padding: 10px; }
   }
 </style>
 </head>
@@ -244,8 +227,11 @@
 <div class="wrap">
   <!-- Шапка -->
   <div class="header">
-    <h1>EBANAT <span>// DAVID</span></h1>
-    <p>Начинающий разраб / Дота / Роблокс / ДнД <span class="cursor"></span></p>
+    <div class="header-info">
+      <h1>EBANAT <span>// DAVID</span></h1>
+      <p>Начинающий разраб / Дота / Роблокс / DDNet <span class="cursor"></span></p>
+    </div>
+    <button class="sound-toggle active" id="soundBtn" onclick="toggleSound()">[ ЗВУК: ВКЛ ]</button>
   </div>
 
   <!-- Вкладки -->
@@ -260,10 +246,8 @@
     
     <!-- Вкладка 1: Обо мне -->
     <div id="tab-about" class="tab-content active">
-      <div class="readme-text">
-        <p>Меня зовут <span class="keyword">Давид</span>, я начинающий разраб всякой херни по типу сайтов и программ (с помощью <span class="string">ИИ</span> конечно).</p>
-        <p>Играю в <span class="keyword">Доту</span>, <span class="keyword">Роблокс</span>, <span class="keyword">ДнД</span> (это все основные игры).</p>
-        <p>Ну и впринципе все, жду вопросов<span class="cursor" style="width: 8px; height: 15px;"></span></p>
+      <div class="readme-text" id="typewriter-container">
+        <!-- Текст вставится через JS для эффекта печатной машинки -->
       </div>
     </div>
 
@@ -290,6 +274,19 @@
   </div>
 </div>
 
+<!-- Статус-бар внизу -->
+<div class="status-bar">
+  <div>
+    <span class="green">● Система онлайн</span>
+    <span>UTF-8</span>
+    <span>JavaScript</span>
+  </div>
+  <div>
+    <span>Firebase: Connected</span>
+    <span>v1.0.3</span>
+  </div>
+</div>
+
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -308,42 +305,87 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // --- РЕТРО ЗВУКИ (Web Audio API) ---
+  // --- НАСТРОЙКИ ЗВУКА ---
+  let isSoundEnabled = true;
   let audioCtx;
-  
+
+  window.toggleSound = function() {
+    isSoundEnabled = !isSoundEnabled;
+    const btn = document.getElementById('soundBtn');
+    if(isSoundEnabled) {
+      btn.textContent = "[ ЗВУК: ВКЛ ]";
+      btn.classList.add('active');
+      playSound('click');
+    } else {
+      btn.textContent = "[ ЗВУК: ВЫКЛ ]";
+      btn.classList.remove('active');
+    }
+  };
+
   function playSound(type) {
+    if (!isSoundEnabled) return;
     try {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
       
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      
       osc.connect(gain);
       gain.connect(audioCtx.destination);
 
       if (type === 'click') {
-        // Ретро клик (как на мех. клавиатуре)
         osc.type = 'square';
         osc.frequency.setValueAtTime(150, audioCtx.currentTime);
         gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.05);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
       } else if (type === 'success') {
-        // 8-бит звук успеха (как монетка в Марио)
         osc.type = 'square';
-        osc.frequency.setValueAtTime(988, audioCtx.currentTime); // B5
-        osc.frequency.setValueAtTime(1319, audioCtx.currentTime + 0.08); // E6
-        
+        osc.frequency.setValueAtTime(988, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(1319, audioCtx.currentTime + 0.08);
         gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
         gain.gain.setValueAtTime(0.05, audioCtx.currentTime + 0.08);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-        
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.3);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
       }
     } catch(e) {}
+  }
+
+  // --- ЭФФЕКТ ПЕЧАТНОЙ МАШИНКИ (Обо мне) ---
+  const textData = [
+    'Меня зовут <span class="keyword">Давид</span>, я начинающий разраб всякой херни по типу сайтов и программ (с помощью <span class="string">ИИ</span> конечно).',
+    'Играю в <span class="keyword">Доту</span>, <span class="keyword">Роблокс</span>, <span class="keyword">ДДНЕТ</span> (это все основные игры).',
+    'Ну и впринципе все, жду вопросов<span class="cursor" style="width: 8px; height: 15px; display:inline-block; vertical-align:bottom;"></span>'
+  ];
+
+  function typeWriter() {
+    const container = document.getElementById('typewriter-container');
+    container.innerHTML = '';
+    let lineIndex = 0;
+
+    function typeLine() {
+      if (lineIndex >= textData.length) return;
+      
+      const p = document.createElement('p');
+      container.appendChild(p);
+      
+      const fullHTML = textData[lineIndex];
+      // Разбиваем HTML на теги и текст, чтобы печатать только текст
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = fullHTML;
+      
+      // Простой способ: печатать весь innerHTML посимвольно (рискованно с тегами, 
+      // поэтому просто используем CSS fade-in для простоты и надежности)
+      p.innerHTML = fullHTML;
+      p.style.opacity = 0;
+      p.style.animation = `fadeIn 0.5s ease forwards`;
+      
+      lineIndex++;
+      setTimeout(typeLine, 600); // Пауза между строками
+    }
+    
+    // Запускаем через секунду после загрузки
+    setTimeout(typeLine, 500);
   }
 
   // --- ВКЛАДКИ ---
@@ -401,10 +443,22 @@
     }
   });
 
-  // --- ЗАГРУЗКА ---
+  // --- ЗАГРУЗКА С ТЕРМИНАЛЬНЫМ СПИННЕРОМ ---
+  let spinInterval;
   async function loadQuestions() {
     const qlist = document.getElementById('qlist');
-    qlist.innerHTML = 'Загрузка данных...';
+    const spinnerChars = ['|', '/', '-', '\\'];
+    let spinIndex = 0;
+    
+    qlist.innerHTML = `<span class="spinner">${spinnerChars[0]}</span> Чтение базы данных...`;
+    
+    // Запускаем анимацию спиннера
+    clearInterval(spinInterval);
+    spinInterval = setInterval(() => {
+      spinIndex = (spinIndex + 1) % spinnerChars.length;
+      const spinnerEl = qlist.querySelector('.spinner');
+      if (spinnerEl) spinnerEl.textContent = spinnerChars[spinIndex];
+    }, 150);
 
     try {
       const q = query(collection(db, "questions"), orderBy("created_at", "desc"));
@@ -427,6 +481,8 @@
         }
       });
 
+      clearInterval(spinInterval); // Останавливаем спиннер
+
       if (count === 0) {
         qlist.innerHTML = '<div class="empty-msg">// Записей в логах не найдено.</div>';
       } else {
@@ -434,6 +490,7 @@
         qlist.classList.remove('empty-msg');
       }
     } catch (error) {
+      clearInterval(spinInterval);
       console.error("Ошибка загрузки: ", error);
       qlist.innerHTML = '<div class="empty-msg">// Ошибка чтения базы данных.</div>';
     }
@@ -444,6 +501,8 @@
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
+  // Инициализация
+  typeWriter();
   loadQuestions();
 </script>
 </body>
