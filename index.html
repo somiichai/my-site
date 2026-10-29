@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Обо мне — задай вопрос</title>
+<style>
+  :root{
+    --bg:#0b0d12; --card:rgba(255,255,255,.045); --stroke:rgba(255,255,255,.09);
+    --text:#e8ebf2; --muted:#8b93a7; --accent:#7c5cff; --accent2:#22d3ee;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+  .blob{position:fixed;border-radius:50%;filter:blur(110px);opacity:.35;pointer-events:none;z-index:0}
+  .blob.a{width:520px;height:520px;background:var(--accent);top:-180px;left:-140px}
+  .blob.b{width:460px;height:460px;background:var(--accent2);bottom:-160px;right:-120px}
+  .wrap{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:64px 22px 80px}
+  .hero{display:flex;align-items:center;gap:26px;margin-bottom:56px}
+  .avatar{width:96px;height:96px;border-radius:30px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:34px;font-weight:700;box-shadow:0 18px 50px -18px var(--accent)}
+  h1{font-size:clamp(28px,5vw,42px);line-height:1.12;letter-spacing:-1.2px;font-weight:750}
+  h1 span{background:linear-gradient(100deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .role{color:var(--muted);font-size:16px;margin-top:8px}
+  .card{background:var(--card);border:1px solid var(--stroke);border-radius:22px;padding:28px;backdrop-filter:blur(14px);margin-bottom:26px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:600;margin-bottom:16px}
+  .field{margin-bottom:14px}
+  label{display:block;font-size:13.5px;color:var(--muted);margin-bottom:7px}
+  input,textarea{width:100%;font:inherit;font-size:15.5px;color:var(--text);background:rgba(0,0,0,.28);border:1px solid var(--stroke);border-radius:14px;padding:13px 16px;outline:none;transition:border-color .2s}
+  input:focus,textarea:focus{border-color:rgba(124,92,255,.7);box-shadow:0 0 0 4px rgba(124,92,255,.14)}
+  textarea{min-height:112px;resize:vertical}
+  button{font:inherit;font-weight:650;font-size:15.5px;color:#fff;cursor:pointer;border:none;border-radius:14px;padding:14px 26px;background:linear-gradient(100deg,var(--accent),#5b8cff);transition:transform .15s;width:100%}
+  button:hover{transform:translateY(-2px)}
+  button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .qitem{border-top:1px solid var(--stroke);padding:18px 0}
+  .qitem:first-of-type{border-top:none;padding-top:4px}
+  .qhead{display:flex;justify-content:space-between;gap:14px;margin-bottom:6px}
+  .qname{font-weight:650;font-size:14.5px;color:#dfe4f0}
+  .qtext{color:#b8c0d2;font-size:15px;white-space:pre-wrap}
+  .qanswer{margin-top:10px;padding:12px;background:rgba(124,92,255,.1);border-left:3px solid var(--accent);border-radius:4px;font-size:15px;color:#dfe4f0}
+  .empty{color:#5d6478;font-size:15px}
+</style>
+</head>
+<body>
+<div class="blob a"></div><div class="blob b"></div>
+<div class="wrap">
+  <header class="hero">
+    <div class="avatar">Я</div>
+    <div>
+      <h1>Привет, я <span>Твоё Имя</span></h1>
+      <div class="role">фронтенд-разработчик · дизайнер</div>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>Обо мне</h2>
+    <p>Пишу код, рисую интерфейсы и коллекционирую странные идеи. Люблю, когда всё работает быстро и выглядит красиво.</p>
+    <p style="margin-top:12px">Здесь можно задать мне любой вопрос. Ответы я публикую ниже!</p>
+  </section>
+
+  <section class="card">
+    <h2>Задать вопрос</h2>
+    <form id="qform">
+      <div class="field">
+        <label>Как вас зовут? (необязательно)</label>
+        <input id="qname" type="text" placeholder="Аноним" maxlength="40">
+      </div>
+      <div class="field">
+        <label>Ваш вопрос</label>
+        <textarea id="qtext" placeholder="Спрашивайте что угодно..." maxlength="1000" required></textarea>
+      </div>
+      <button type="submit" id="submitBtn">Отправить вопрос</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Вопросы и ответы</h2>
+    <div id="qlist">Загрузка...</div>
+  </section>
+</div>
+
+<!-- ПОДКЛЮЧАЕМ FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAAfgqtAUHOAVNo900jMZQFI9GObj47bdc",
+    authDomain: "voprosi.firebaseapp.com",
+    projectId: "voprosi",
+    storageBucket: "voprosi.firebasestorage.app",
+    messagingSenderId: "855402975294",
+    appId: "1:855402975294:web:72953e066532f05242016f",
+    measurementId: "G-1B46511489"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 1. Отправка формы
+  document.getElementById('qform').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const name = document.getElementById('qname').value.trim();
+    const text = document.getElementById('qtext').value.trim();
+
+    if (text.length < 3) return;
+
+    btn.disabled = true;
+    btn.textContent = "Отправка...";
+
+    try {
+      await addDoc(collection(db, "questions"), {
+        name: name || "Аноним",
+        text: text,
+        answer: null,
+        created_at: serverTimestamp()
+      });
+      document.getElementById('qform').reset();
+      btn.textContent = "Отправлено ✓";
+      setTimeout(() => { btn.textContent = "Отправить вопрос"; btn.disabled = false; }, 3000);
+    } catch (error) {
+      console.error("Ошибка: ", error);
+      alert("Ошибка отправки. Попробуйте позже.");
+      btn.textContent = "Отправить вопрос";
+      btn.disabled = false;
+    }
+  });
+
+  // 2. Загрузка и отображение вопросов (только с ответами)
+  async function loadQuestions() {
+    const qlist = document.getElementById('qlist');
+    try {
+      const q = query(collection(db, "questions"), orderBy("created_at", "desc"));
+      const querySnapshot = await getDocs(q);
+      
+      let html = "";
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.answer) {
+          html += `
+            <div class="qitem">
+              <div class="qhead">
+                <span class="qname">${escapeHtml(data.name)}</span>
+              </div>
+              <div class="qtext">${escapeHtml(data.text)}</div>
+              <div class="qanswer"><strong>Ответ:</strong> ${escapeHtml(data.answer)}</div>
+            </div>
+          `;
+        }
+      });
+
+      qlist.innerHTML = html || '<p class="empty">Пока нет отвеченных вопросов. Задайте свой!</p>';
+    } catch (error) {
+      console.error("Ошибка загрузки: ", error);
+      qlist.innerHTML = '<p class="empty">Не удалось загрузить вопросы.</p>';
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  loadQuestions();
+</script>
+</body>
+</html>
