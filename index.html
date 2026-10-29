@@ -3,316 +3,290 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Давид (EBANAT) — Задать вопрос</title>
+<title>EBANAT // System</title>
 <style>
-  :root{
-    --bg: #08090d;
-    --surface: rgba(255, 255, 255, 0.03);
-    --stroke: rgba(255, 255, 255, 0.08);
-    --text: #f0f2f8;
-    --muted: #8b93a7;
-    --accent: #8b5cf6;
-    --accent2: #06b6d4;
-    --accent-glow: rgba(139, 92, 246, 0.3);
+  :root {
+    --bg: #0a0a0a;
+    --panel: #121212;
+    --border: #333333;
+    --text: #d4d4d4;
+    --muted: #666666;
+    --green: #00ff41; /* Терминальный зеленый */
+    --red: #ff3333;   /* Дота-красный */
+    --font-mono: 'Consolas', 'Courier New', monospace;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    line-height: 1.6;
-    overflow-x: hidden;
-  }
 
-  /* Фоновые пятна */
-  .blob {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(120px);
-    opacity: 0.4;
-    pointer-events: none;
-    z-index: 0;
-    animation: float 20s ease-in-out infinite alternate;
-  }
-  .blob.a { width: 600px; height: 600px; background: var(--accent); top: -200px; left: -200px; }
-  .blob.b { width: 500px; height: 500px; background: var(--accent2); bottom: -200px; right: -200px; animation-delay: -10s; }
-  
-  @keyframes float {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(100px, 50px) scale(1.1); }
+  body {
+    background-color: var(--bg);
+    /* Едва заметная сетка на фоне */
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 20px 20px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    line-height: 1.5;
   }
 
   .wrap {
-    position: relative;
-    z-index: 1;
-    max-width: 700px;
+    max-width: 750px;
     margin: 0 auto;
-    padding: 60px 20px 80px;
+    padding: 40px 20px;
   }
 
-  /* Шапка */
-  .hero {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    margin-bottom: 40px;
-    animation: slideDown 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  }
-  .avatar {
-    width: 90px;
-    height: 90px;
-    border-radius: 24px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: grid;
-    place-items: center;
-    font-size: 36px;
-    font-weight: 800;
-    box-shadow: 0 20px 40px -15px var(--accent-glow);
-    border: 2px solid rgba(255,255,255,0.1);
-  }
-  h1 {
-    font-size: clamp(28px, 5vw, 40px);
-    line-height: 1.1;
-    letter-spacing: -1px;
-    font-weight: 800;
-  }
-  h1 span {
-    background: linear-gradient(100deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .badge {
-    display: inline-block;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    background: rgba(255,255,255,0.1);
-    padding: 4px 10px;
-    border-radius: 8px;
-    vertical-align: middle;
-    margin-left: 10px;
-    color: var(--accent2);
-  }
-
-  /* Вкладки */
-  .tabs-container {
-    display: flex;
-    background: var(--surface);
-    border: 1px solid var(--stroke);
-    border-radius: 20px;
-    padding: 6px;
-    margin-bottom: 24px;
+  /* Шапка как в терминале */
+  .header {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    padding: 20px;
+    margin-bottom: 20px;
     position: relative;
-    backdrop-filter: blur(10px);
-    animation: slideDown 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s both;
+  }
+  /* Имитация кнопок окна ОС */
+  .header::before {
+    content: "■ □ X";
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    color: var(--border);
+    font-size: 12px;
+    letter-spacing: 4px;
+  }
+  .header h1 {
+    font-size: 24px;
+    color: var(--green);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .header h1 span {
+    color: var(--red);
+  }
+  .header p {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .cursor {
+    display: inline-block;
+    width: 10px;
+    height: 18px;
+    background: var(--green);
+    animation: blink 1s step-end infinite;
+    vertical-align: bottom;
+    margin-left: 5px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Вкладки в стиле консольных команд */
+  .tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: -1px; /* Соединяем с контентом */
+    flex-wrap: wrap;
   }
   .tab-btn {
-    flex: 1;
-    background: transparent;
-    border: none;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
     color: var(--muted);
-    font-size: 15px;
-    font-weight: 600;
-    padding: 12px 20px;
-    border-radius: 14px;
+    padding: 10px 16px;
+    font-family: var(--font-mono);
+    font-size: 14px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    z-index: 1;
+    transition: all 0.1s;
   }
-  .tab-btn:hover { color: var(--text); }
+  .tab-btn:hover {
+    color: var(--text);
+    background: #1a1a1a;
+  }
   .tab-btn.active {
-    color: #fff;
-    background: rgba(255,255,255,0.08);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    background: var(--panel);
+    color: var(--green);
+    border-color: var(--border);
+    border-bottom-color: var(--panel); /* Сливается с контентом */
+    font-weight: bold;
   }
 
-  /* Контент вкладок */
-  .tab-content {
-    display: none;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
+  /* Контентная часть */
+  .content-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 30px;
+    margin-bottom: 30px;
+    min-height: 300px;
   }
-  .tab-content.active {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
 
-  /* Карточки */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--stroke);
-    border-radius: 24px;
-    padding: 32px;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  /* Текст "Обо мне" */
+  .readme-text p {
+    margin-bottom: 16px;
+    font-size: 15px;
   }
+  .readme-text p::before {
+    content: "> ";
+    color: var(--green);
+    font-weight: bold;
+  }
+  .keyword { color: var(--red); }
+  .string { color: var(--green); }
 
   /* Форма */
-  .field { margin-bottom: 20px; }
+  .form-group { margin-bottom: 20px; }
   label {
     display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--muted);
     margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: var(--muted);
+    font-size: 13px;
   }
   input, textarea {
     width: 100%;
-    font: inherit;
-    font-size: 16px;
-    color: var(--text);
-    background: rgba(0,0,0,0.3);
-    border: 1px solid var(--stroke);
-    border-radius: 16px;
-    padding: 16px;
+    background: #050505;
+    border: 1px solid var(--border);
+    color: var(--green);
+    padding: 12px;
+    font-family: var(--font-mono);
+    font-size: 15px;
     outline: none;
-    transition: all 0.3s ease;
   }
   input:focus, textarea:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 4px var(--accent-glow);
-    background: rgba(0,0,0,0.5);
+    border-color: var(--green);
+    box-shadow: 0 0 5px rgba(0, 255, 65, 0.2);
   }
-  textarea { min-height: 130px; resize: vertical; }
+  textarea { min-height: 120px; resize: vertical; }
   
   button[type="submit"] {
-    width: 100%;
-    font: inherit;
-    font-weight: 700;
-    font-size: 16px;
-    color: #fff;
+    background: var(--border);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 12px 24px;
+    font-family: var(--font-mono);
+    font-weight: bold;
+    font-size: 15px;
     cursor: pointer;
-    border: none;
-    border-radius: 16px;
-    padding: 16px;
-    background: linear-gradient(100deg, var(--accent), #6366f1);
-    box-shadow: 0 10px 25px -5px var(--accent-glow);
-    transition: all 0.2s ease;
+    text-transform: uppercase;
+    transition: all 0.1s;
   }
   button[type="submit"]:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 35px -5px var(--accent-glow);
+    background: var(--green);
+    color: #000;
+    border-color: var(--green);
   }
-  button[type="submit"]:active { transform: translateY(0); }
-  button[type="submit"]:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  button[type="submit"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--border);
+    color: var(--text);
+  }
 
-  /* Список вопросов */
-  .qitem {
-    padding: 20px 0;
-    border-bottom: 1px solid var(--stroke);
-    animation: fadeIn 0.5s ease both;
+  /* Логи / Список вопросов */
+  .log-item {
+    border-left: 2px solid var(--border);
+    padding-left: 15px;
+    margin-bottom: 25px;
+    position: relative;
   }
-  .qitem:last-child { border-bottom: none; padding-bottom: 0; }
-  .qitem:first-child { padding-top: 0; }
-  
-  .qhead {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 8px;
+  .log-item::before {
+    content: "";
+    position: absolute;
+    left: -4px;
+    top: 5px;
+    width: 6px;
+    height: 6px;
+    background: var(--border);
+    border-radius: 50%;
   }
-  .qname {
-    font-weight: 700;
-    font-size: 15px;
-    color: #fff;
-  }
-  .qtext {
-    color: #cbd5e1;
-    font-size: 15px;
-    line-height: 1.5;
-    white-space: pre-wrap;
-  }
-  .qanswer {
-    margin-top: 16px;
-    padding: 16px;
-    background: rgba(139, 92, 246, 0.08);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 12px 12px 0;
-    font-size: 15px;
-    color: #e2e8f0;
-  }
-  .qanswer strong {
-    display: block;
-    color: var(--accent2);
+  .log-meta {
     font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
+  }
+  .log-q {
+    color: var(--text);
+    font-size: 15px;
+    margin-bottom: 10px;
+  }
+  .log-a {
+    color: var(--green);
+    font-size: 15px;
+    background: rgba(0, 255, 65, 0.05);
+    padding: 10px;
+    border: 1px dashed var(--green);
+  }
+  .log-a::before {
+    content: "ОТВЕТ: ";
+    font-size: 12px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 4px;
+    opacity: 0.7;
   }
   
-  .empty {
-    text-align: center;
+  .empty-msg {
     color: var(--muted);
+    text-align: center;
     padding: 40px 0;
-    font-size: 15px;
-  }
-
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    font-style: italic;
   }
 
   @media (max-width: 600px) {
-    .hero { flex-direction: column; text-align: center; gap: 16px; }
-    .card { padding: 24px 20px; }
-    .badge { display: block; margin: 8px auto 0; width: fit-content; }
+    .tabs { gap: 2px; }
+    .tab-btn { flex: 1; padding: 10px 5px; font-size: 12px; text-align: center; }
+    .content-box { padding: 20px 15px; }
   }
 </style>
 </head>
 <body>
-<div class="blob a"></div><div class="blob b"></div>
 
 <div class="wrap">
-  <header class="hero">
-    <div class="avatar">Д</div>
-    <div>
-      <h1>Давид <span>(EBANAT)</span></h1>
-      <div style="color: var(--muted); font-size: 16px; margin-top: 4px;">Отвечаю на ваши вопросы</div>
-    </div>
-  </header>
+  <!-- Шапка -->
+  <div class="header">
+    <h1>EBANAT <span>// DAVID</span></h1>
+    <p>Начинающий разраб / Дота / Роблокс / ДнД <span class="cursor"></span></p>
+  </div>
 
   <!-- Вкладки -->
-  <div class="tabs-container">
-    <button class="tab-btn active" onclick="switchTab('tab-form')">Задать вопрос</button>
-    <button class="tab-btn" onclick="switchTab('tab-answers')">Заданные вопросы</button>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('tab-about', event)">./about_me</button>
+    <button class="tab-btn" onclick="switchTab('tab-form', event)">./ask_question</button>
+    <button class="tab-btn" onclick="switchTab('tab-answers', event)">./logs</button>
   </div>
 
-  <!-- Вкладка 1: Форма -->
-  <div id="tab-form" class="tab-content active">
-    <div class="card">
+  <!-- Контент -->
+  <div class="content-box">
+    
+    <!-- Вкладка 1: Обо мне -->
+    <div id="tab-about" class="tab-content active">
+      <div class="readme-text">
+        <p>Меня зовут <span class="keyword">Давид</span>, я начинающий разраб всякой херни по типу сайтов и программ (с помощью <span class="string">ИИ</span> конечно).</p>
+        <p>Играю в <span class="keyword">Доту</span>, <span class="keyword">Роблокс</span>, <span class="keyword">ДнД</span> (это все основные игры).</p>
+        <p>Ну и впринципе все, жду вопросов<span class="cursor" style="width: 8px; height: 15px;"></span></p>
+      </div>
+    </div>
+
+    <!-- Вкладка 2: Форма -->
+    <div id="tab-form" class="tab-content">
       <form id="qform">
-        <div class="field">
-          <label for="qname">Как вас зовут? (необязательно)</label>
+        <div class="form-group">
+          <label>> Введите ваше имя (опционально):</label>
           <input id="qname" type="text" placeholder="Аноним" maxlength="40">
         </div>
-        <div class="field">
-          <label for="qtext">Ваш вопрос</label>
-          <textarea id="qtext" placeholder="Спрашивайте что угодно..." maxlength="1000" required></textarea>
+        <div class="form-group">
+          <label>> Введите текст вопроса:</label>
+          <textarea id="qtext" placeholder="Пишите сюда..." maxlength="1000" required></textarea>
         </div>
-        <button type="submit" id="submitBtn">Отправить вопрос</button>
+        <button type="submit" id="submitBtn">[ Отправить ]</button>
       </form>
     </div>
-  </div>
 
-  <!-- Вкладка 2: Ответы -->
-  <div id="tab-answers" class="tab-content">
-    <div class="card">
-      <div id="qlist" class="empty">Загрузка...</div>
+    <!-- Вкладка 3: Логи (Ответы) -->
+    <div id="tab-answers" class="tab-content">
+      <div id="qlist" class="empty-msg">Инициализация базы данных...</div>
     </div>
+
   </div>
 </div>
 
@@ -321,7 +295,6 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  // Ключи Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyAAfgqtAUHOAVNo900jMZQFI9GObj47bdc",
     authDomain: "voprosi.firebaseapp.com",
@@ -335,26 +308,56 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // --- ЛОГИКА ВКЛАДОК ---
-  window.switchTab = function(tabId) {
-    // Скрываем все контенты
+  // --- РЕТРО ЗВУКИ (Web Audio API) ---
+  let audioCtx;
+  
+  function playSound(type) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'click') {
+        // Ретро клик (как на мех. клавиатуре)
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.05);
+      } else if (type === 'success') {
+        // 8-бит звук успеха (как монетка в Марио)
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(988, audioCtx.currentTime); // B5
+        osc.frequency.setValueAtTime(1319, audioCtx.currentTime + 0.08); // E6
+        
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime + 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      }
+    } catch(e) {}
+  }
+
+  // --- ВКЛАДКИ ---
+  window.switchTab = function(tabId, event) {
+    playSound('click');
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    // Убираем активный класс со всех кнопок
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    
-    // Показываем нужный контент
     document.getElementById(tabId).classList.add('active');
+    if(event && event.currentTarget) event.currentTarget.classList.add('active');
     
-    // Добавляем класс кнопке, по которой кликнули
-    event.currentTarget.classList.add('active');
-    
-    // Если переключились на ответы — обновляем список
-    if (tabId === 'tab-answers') {
-      loadQuestions();
-    }
+    if (tabId === 'tab-answers') loadQuestions();
   };
 
-  // --- ОТПРАВКА ВОПРОСА ---
+  // --- ОТПРАВКА ---
   document.getElementById('qform').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
@@ -364,7 +367,7 @@
     if (text.length < 3) return;
 
     btn.disabled = true;
-    btn.textContent = "Отправка...";
+    btn.textContent = "[ Отправка... ]";
 
     try {
       await addDoc(collection(db, "questions"), {
@@ -375,30 +378,33 @@
       });
       
       document.getElementById('qform').reset();
-      btn.textContent = "Успешно отправлено ✓";
-      btn.style.background = "linear-gradient(100deg, #10b981, #059669)";
+      playSound('success');
+      
+      btn.textContent = "[ Успешно! ]";
+      btn.style.color = "#000";
+      btn.style.background = "var(--green)";
+      btn.style.borderColor = "var(--green)";
       
       setTimeout(() => { 
-        btn.textContent = "Отправить вопрос"; 
-        btn.style.background = "linear-gradient(100deg, var(--accent), #6366f1)";
+        btn.textContent = "[ Отправить ]"; 
+        btn.style.color = "var(--text)";
+        btn.style.background = "var(--border)";
+        btn.style.borderColor = "var(--border)";
         btn.disabled = false; 
-      }, 3000);
+      }, 2500);
       
     } catch (error) {
       console.error("Ошибка: ", error);
-      alert("Ошибка отправки. Попробуйте позже.");
-      btn.textContent = "Отправить вопрос";
+      alert("Ошибка отправки.");
+      btn.textContent = "[ Отправить ]";
       btn.disabled = false;
     }
   });
 
-  // --- ЗАГРУЗКА ОТВЕТОВ ---
+  // --- ЗАГРУЗКА ---
   async function loadQuestions() {
     const qlist = document.getElementById('qlist');
-    // Показываем скелетон загрузки, если список пуст
-    if(qlist.innerHTML === 'Загрузка...' || qlist.innerHTML === '') {
-       qlist.innerHTML = '<div class="empty">Загрузка...</div>';
-    }
+    qlist.innerHTML = 'Загрузка данных...';
 
     try {
       const q = query(collection(db, "questions"), orderBy("created_at", "desc"));
@@ -409,32 +415,27 @@
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        if (data.answer) { // Показываем только те, где есть ответ
+        if (data.answer) {
           count++;
           html += `
-            <div class="qitem">
-              <div class="qhead">
-                <span class="qname">${escapeHtml(data.name)}</span>
-              </div>
-              <div class="qtext">${escapeHtml(data.text)}</div>
-              <div class="qanswer">
-                <strong>Ответ:</strong> 
-                ${escapeHtml(data.answer)}
-              </div>
+            <div class="log-item">
+              <div class="log-meta">ID: ${doc.id.slice(0,6)} | От: ${escapeHtml(data.name)}</div>
+              <div class="log-q">${escapeHtml(data.text)}</div>
+              <div class="log-a">${escapeHtml(data.answer)}</div>
             </div>
           `;
         }
       });
 
       if (count === 0) {
-        qlist.innerHTML = '<div class="empty">Пока нет отвеченных вопросов. Станьте первым!</div>';
+        qlist.innerHTML = '<div class="empty-msg">// Записей в логах не найдено.</div>';
       } else {
         qlist.innerHTML = html;
-        qlist.classList.remove('empty');
+        qlist.classList.remove('empty-msg');
       }
     } catch (error) {
       console.error("Ошибка загрузки: ", error);
-      qlist.innerHTML = '<div class="empty">Не удалось загрузить вопросы.</div>';
+      qlist.innerHTML = '<div class="empty-msg">// Ошибка чтения базы данных.</div>';
     }
   }
 
@@ -443,9 +444,7 @@
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  // Инициализация при загрузке страницы
   loadQuestions();
-
 </script>
 </body>
 </html>
