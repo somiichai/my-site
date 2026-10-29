@@ -46,7 +46,7 @@
     width: 100%;
   }
 
-  /* Шапка как в терминале */
+  /* Шапка */
   .header {
     border: 1px solid var(--border);
     background: var(--panel);
@@ -75,7 +75,6 @@
   .header-info h1 span { color: var(--red); }
   .header-info p { color: var(--muted); font-size: 14px; }
   
-  /* Переключатель звука */
   .sound-toggle {
     background: transparent;
     border: 1px solid var(--border);
@@ -134,16 +133,21 @@
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
-  /* Эффект печатной машинки */
-  .typewriter { overflow: hidden; border-right: .15em solid var(--green); white-space: pre-wrap; letter-spacing: .05em; animation: typing 2.5s steps(40, end), blink-caret .75s step-end infinite; }
-  @keyframes typing { from { width: 0 } to { width: 100% } }
-  @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: var(--green) } }
-
   /* Текст "Обо мне" */
   .readme-text p { margin-bottom: 16px; font-size: 15px; }
   .readme-text p::before { content: "> "; color: var(--green); font-weight: bold; }
   .keyword { color: var(--red); }
   .string { color: var(--green); }
+
+  /* Анимация появления строк */
+  .fade-line {
+    opacity: 0;
+    animation: fadeInLine 0.4s ease forwards;
+  }
+  @keyframes fadeInLine {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   /* Форма */
   .form-group { margin-bottom: 20px; }
@@ -190,7 +194,7 @@
   
   .empty-msg { color: var(--muted); text-align: center; padding: 40px 0; font-style: italic; }
 
-  /* Статус-бар (Как в VS Code) */
+  /* Статус-бар */
   .status-bar {
     background: #111;
     border-top: 1px solid var(--border);
@@ -209,7 +213,6 @@
   .status-bar span { margin-right: 15px; }
   .status-bar .green { color: var(--green); }
   
-  /* Спиннер загрузки */
   .spinner { color: var(--green); font-weight: bold; margin-right: 5px; }
 
   @media (max-width: 600px) {
@@ -225,7 +228,6 @@
 <body>
 
 <div class="wrap">
-  <!-- Шапка -->
   <div class="header">
     <div class="header-info">
       <h1>EBANAT <span>// DAVID</span></h1>
@@ -234,24 +236,17 @@
     <button class="sound-toggle active" id="soundBtn" onclick="toggleSound()">[ ЗВУК: ВКЛ ]</button>
   </div>
 
-  <!-- Вкладки -->
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('tab-about', event)">./about_me</button>
     <button class="tab-btn" onclick="switchTab('tab-form', event)">./ask_question</button>
     <button class="tab-btn" onclick="switchTab('tab-answers', event)">./logs</button>
   </div>
 
-  <!-- Контент -->
   <div class="content-box">
-    
-    <!-- Вкладка 1: Обо мне -->
     <div id="tab-about" class="tab-content active">
-      <div class="readme-text" id="typewriter-container">
-        <!-- Текст вставится через JS для эффекта печатной машинки -->
-      </div>
+      <div class="readme-text" id="typewriter-container"></div>
     </div>
 
-    <!-- Вкладка 2: Форма -->
     <div id="tab-form" class="tab-content">
       <form id="qform">
         <div class="form-group">
@@ -266,15 +261,12 @@
       </form>
     </div>
 
-    <!-- Вкладка 3: Логи (Ответы) -->
     <div id="tab-answers" class="tab-content">
       <div id="qlist" class="empty-msg">Инициализация базы данных...</div>
     </div>
-
   </div>
 </div>
 
-<!-- Статус-бар внизу -->
 <div class="status-bar">
   <div>
     <span class="green">● Система онлайн</span>
@@ -283,11 +275,10 @@
   </div>
   <div>
     <span>Firebase: Connected</span>
-    <span>v1.0.3</span>
+    <span>v1.0.4</span>
   </div>
 </div>
 
-<!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -305,7 +296,6 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // --- НАСТРОЙКИ ЗВУКА ---
   let isSoundEnabled = true;
   let audioCtx;
 
@@ -351,11 +341,11 @@
     } catch(e) {}
   }
 
-  // --- ЭФФЕКТ ПЕЧАТНОЙ МАШИНКИ (Обо мне) ---
+  // --- ИСПРАВЛЕННЫЙ ЭФФЕКТ ПОЯВЛЕНИЯ ---
   const textData = [
     'Меня зовут <span class="keyword">Давид</span>, я начинающий разраб всякой херни по типу сайтов и программ (с помощью <span class="string">ИИ</span> конечно).',
     'Играю в <span class="keyword">Доту</span>, <span class="keyword">Роблокс</span>, <span class="keyword">ДДНЕТ</span> (это все основные игры).',
-    'Ну и впринципе все, жду вопросов<span class="cursor" style="width: 8px; height: 15px; display:inline-block; vertical-align:bottom;"></span>'
+    'Ну и впринципе все, жду вопросов<span class="cursor" style="width: 8px; height: 15px; display:inline-block; vertical-align:bottom; margin-left:2px;"></span>'
   ];
 
   function typeWriter() {
@@ -367,28 +357,18 @@
       if (lineIndex >= textData.length) return;
       
       const p = document.createElement('p');
+      p.innerHTML = textData[lineIndex];
+      // Добавляем класс с правильной CSS-анимацией
+      p.classList.add('fade-line'); 
       container.appendChild(p);
       
-      const fullHTML = textData[lineIndex];
-      // Разбиваем HTML на теги и текст, чтобы печатать только текст
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = fullHTML;
-      
-      // Простой способ: печатать весь innerHTML посимвольно (рискованно с тегами, 
-      // поэтому просто используем CSS fade-in для простоты и надежности)
-      p.innerHTML = fullHTML;
-      p.style.opacity = 0;
-      p.style.animation = `fadeIn 0.5s ease forwards`;
-      
       lineIndex++;
-      setTimeout(typeLine, 600); // Пауза между строками
+      setTimeout(typeLine, 600);
     }
     
-    // Запускаем через секунду после загрузки
-    setTimeout(typeLine, 500);
+    setTimeout(typeLine, 300);
   }
 
-  // --- ВКЛАДКИ ---
   window.switchTab = function(tabId, event) {
     playSound('click');
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -399,7 +379,6 @@
     if (tabId === 'tab-answers') loadQuestions();
   };
 
-  // --- ОТПРАВКА ---
   document.getElementById('qform').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
@@ -443,7 +422,6 @@
     }
   });
 
-  // --- ЗАГРУЗКА С ТЕРМИНАЛЬНЫМ СПИННЕРОМ ---
   let spinInterval;
   async function loadQuestions() {
     const qlist = document.getElementById('qlist');
@@ -452,7 +430,6 @@
     
     qlist.innerHTML = `<span class="spinner">${spinnerChars[0]}</span> Чтение базы данных...`;
     
-    // Запускаем анимацию спиннера
     clearInterval(spinInterval);
     spinInterval = setInterval(() => {
       spinIndex = (spinIndex + 1) % spinnerChars.length;
@@ -481,7 +458,7 @@
         }
       });
 
-      clearInterval(spinInterval); // Останавливаем спиннер
+      clearInterval(spinInterval);
 
       if (count === 0) {
         qlist.innerHTML = '<div class="empty-msg">// Записей в логах не найдено.</div>';
@@ -501,7 +478,6 @@
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  // Инициализация
   typeWriter();
   loadQuestions();
 </script>
