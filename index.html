@@ -36,9 +36,58 @@
     display: flex;
     flex-direction: column;
     line-height: 1.5;
+    overflow-x: hidden; /* Чтобы падающие окна не создавали скролл */
   }
 
+  /* --- СТИЛИ ДЛЯ ПАДАЮЩИХ ОКОН (МАТРИЦА) --- */
+  .matrix-window {
+    position: fixed;
+    top: -300px; /* Начинаем выше экрана */
+    z-index: 0; /* Позади всего контента */
+    pointer-events: none; /* Чтобы не мешали кликать по ссылкам */
+    background: #0a0a0a;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
+    padding: 5px 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--green);
+    opacity: 0;
+    /* Анимация падения */
+    animation-name: fall;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+  }
+
+  .matrix-header {
+    border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+    color: rgba(0, 255, 65, 0.5);
+    font-size: 9px;
+    margin-bottom: 5px;
+    padding-bottom: 2px;
+    letter-spacing: 2px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .matrix-content {
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.2;
+    text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+  }
+
+  @keyframes fall {
+    0% { transform: translateY(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(120vh); opacity: 0; } /* Улетает за нижний край */
+  }
+
+  /* --- ОСНОВНОЙ КОНТЕНТ --- */
   .wrap {
+    position: relative;
+    z-index: 10; /* Контент поверх падающих окон */
     max-width: 750px;
     margin: 0 auto;
     padding: 40px 20px;
@@ -139,7 +188,6 @@
   .keyword { color: var(--red); }
   .string { color: var(--green); }
 
-  /* Анимация появления строк */
   .fade-line {
     opacity: 0;
     animation: fadeInLine 0.4s ease forwards;
@@ -275,7 +323,7 @@
   </div>
   <div>
     <span>Firebase: Connected</span>
-    <span>v1.0.4</span>
+    <span>v1.0.5 (Matrix Update)</span>
   </div>
 </div>
 
@@ -296,6 +344,59 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  // ==========================================
+  // ГЕНЕРАТОР ПАДАЮЩИХ ОКОН (МАТРИЦА)
+  // ==========================================
+  function createMatrixWindow() {
+    const win = document.createElement('div');
+    win.className = 'matrix-window';
+    
+    // Генерация случайного текста из 1 и 0
+    let binaryText = '';
+    const lines = Math.floor(Math.random() * 6) + 4; // От 4 до 9 строк
+    for(let i = 0; i < lines; i++) {
+      const chars = Math.floor(Math.random() * 15) + 5; // От 5 до 20 символов
+      let line = '';
+      for(let j = 0; j < chars; j++) {
+        line += Math.random() > 0.5 ? '1' : '0';
+      }
+      binaryText += line + '\n';
+    }
+
+    win.innerHTML = `
+      <div class="matrix-header">■ □ X</div>
+      <div class="matrix-content">${binaryText}</div>
+    `;
+
+    // Случайная позиция по горизонтали (от 5% до 90% ширины экрана)
+    win.style.left = (Math.random() * 85 + 5) + 'vw';
+    
+    // Случайная ширина окна
+    win.style.width = (Math.random() * 60 + 70) + 'px';
+
+    // Случайная скорость падения (от 6 до 12 секунд)
+    win.style.animationDuration = (Math.random() * 6 + 6) + 's';
+
+    document.body.appendChild(win);
+
+    // Удаляем окно из DOM после завершения анимации, чтобы не засорять память
+    setTimeout(() => {
+      win.remove();
+    }, 12000);
+  }
+
+  // Запускаем спавн окон: первое через 1 сек, потом каждые 2-4 секунды
+  setTimeout(createMatrixWindow, 1000);
+  setInterval(() => {
+    // Чтобы было не слишком густо, добавляем случайность
+    if (Math.random() > 0.3) {
+      createMatrixWindow();
+    }
+  }, 2500);
+
+  // ==========================================
+  // ЗВУКИ
+  // ==========================================
   let isSoundEnabled = true;
   let audioCtx;
 
@@ -341,7 +442,9 @@
     } catch(e) {}
   }
 
-  // --- ИСПРАВЛЕННЫЙ ЭФФЕКТ ПОЯВЛЕНИЯ ---
+  // ==========================================
+  // ЭФФЕКТ ПЕЧАТНОЙ МАШИНКИ (Обо мне)
+  // ==========================================
   const textData = [
     'Меня зовут <span class="keyword">Давид</span>, я начинающий разраб всякой херни по типу сайтов и программ (с помощью <span class="string">ИИ</span> конечно).',
     'Играю в <span class="keyword">Доту</span>, <span class="keyword">Роблокс</span>, <span class="keyword">ДДНЕТ</span> (это все основные игры).',
@@ -358,7 +461,6 @@
       
       const p = document.createElement('p');
       p.innerHTML = textData[lineIndex];
-      // Добавляем класс с правильной CSS-анимацией
       p.classList.add('fade-line'); 
       container.appendChild(p);
       
@@ -369,6 +471,9 @@
     setTimeout(typeLine, 300);
   }
 
+  // ==========================================
+  // ЛОГИКА ВКЛАДОК И БАЗЫ ДАННЫХ
+  // ==========================================
   window.switchTab = function(tabId, event) {
     playSound('click');
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
